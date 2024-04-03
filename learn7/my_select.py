@@ -23,7 +23,6 @@ def select_1():
 def select_2():
     query_result = (
         session.query(Grade.student, func.avg(Grade.rating).label('avg_rating'))
-        .filter(Grade.subject == 'Physics')
         .group_by(Grade.student)
         .order_by(func.avg(Grade.rating).desc())
         .limit(1)
@@ -35,11 +34,12 @@ def select_2():
 
 def select_3():
     query_result = (
-        session.query(Group.name, Grade.subject, func.avg(Grade.rating).label("avg_rating"))
-        .join(Student, Student.group_name == Group.name)
-        .join(Grade, Grade.student == Student.name)
-        .filter(Grade.subject == 'History')
-        .group_by(Group.name, Grade.subject)
+        session.query(
+            Student.group_name, Subject.name, func.avg(Grade.rating).label("avg_rating")
+        )
+        .join(Grade, Student.name == Grade.student)
+        .filter(Grade.subject == Subject.name, Subject.id == 3)
+        .group_by(Student.group_name, Subject.name)
         .all()
     )
 
@@ -56,7 +56,7 @@ def select_5():
     query_result = (
         session.query(Subject.name, Subject.teacher)
         .join(Teacher, Teacher.name == Subject.teacher)
-        .filter(Teacher.name == "Tracey Jenkins")
+        .filter(Teacher.id == 4)
         .all()
     )
 
@@ -67,7 +67,7 @@ def select_6():
     query_result = (
         session.query(Student.name, Student.group_name)
         .join(Group, Group.name == Student.group_name)
-        .filter(Student.group_name == 'Group_1')
+        .filter(Group.id == 1)
         .all()
         )
     for row in query_result:
@@ -78,7 +78,9 @@ def select_7():
     query_result = (
         session.query(Grade.student, Student.group_name, Grade.subject, Grade.rating)
         .join(Student, Student.name == Grade.student)
-        .filter(Student.group_name == "Group_2", Grade.subject == "Chemistry")
+        .join(Group, Student.group_name == Group.name)
+        .join(Subject, Subject.name == Grade.subject)
+        .filter(Group.id == 2, Subject.id == 3)
         .all()
     )
 
@@ -92,7 +94,7 @@ def select_8():
             Subject.teacher, Subject.name, func.avg(Grade.rating).label("avg_rating")
         )
         .join(Grade, Grade.subject == Subject.name)
-        .filter(Subject.teacher == "David Aguilar")
+        .filter(Subject.id == 3)
         .group_by(Subject.teacher, Subject.name)
         .all()
     )
@@ -105,7 +107,7 @@ def select_9():
         .join(Grade, Grade.subject == Subject.name)
         .join(Student, Student.name == Grade.student)
         .group_by(Student.name, Subject.name)
-        .filter(Grade.student == "Timothy Johnson")
+        .filter(Grade.id == 4)
         .all()
     )
 
@@ -119,11 +121,15 @@ def select_10():
         .join(Grade, Grade.subject == Subject.name)
         .join(Teacher, Subject.teacher == Teacher.name)
         .group_by(Student.name, Subject.name, Subject.teacher)
-        .filter(Student.name == "Haley Hoffman", Teacher.name == "Tracey Jenkins")
+        .filter(Student.id == 1, Teacher.id == 2)
         .all()
     )
 
     for row in query_result:
         print(row)
 
+
+
+
 select_10()
+print("10-------------------------")
